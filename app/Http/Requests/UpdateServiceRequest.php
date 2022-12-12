@@ -24,7 +24,15 @@ class UpdateServiceRequest extends FormRequest
     public function rules()
     {
         return [
-            'name' => 'required'
+            'name' => ['required', 'string'],
+        ];
+    }
+
+    public function messages()
+    {
+        return [
+            'name.required' => 'please input a valid service',
+            'name.string' => 'name must be a string',
         ];
     }
 }

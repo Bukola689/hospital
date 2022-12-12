@@ -24,7 +24,14 @@ class UpdateRoomRequest extends FormRequest
     public function rules()
     {
         return [
-            'room_no' => 'required'
+            'room_no' => ['required']
+        ];
+    }
+
+    public function messages()
+    {
+        return [
+            'room_no.required' => 'please insert room number for update'
         ];
     }
 }

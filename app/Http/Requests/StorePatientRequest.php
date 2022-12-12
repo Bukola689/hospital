@@ -25,10 +25,10 @@ class StorePatientRequest extends FormRequest
     {
         return [
             'user_id' => 'required',
-            'first_name' => 'required',
-            'last_name' => 'required',
-            'd_o_b' => 'required',
-            'phone' => 'required',
+            'first_name' =>  ['required', 'string'],
+            'last_name' => ['required', 'string'],
+            'd_o_b' =>  ['required'],
+            'phone' => ['required', 'max:11'],
             'address' => 'required',
             'image' => 'required'
         ];

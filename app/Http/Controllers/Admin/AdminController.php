@@ -3,56 +3,40 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-
+use App\Http\Requests\StoreDoctorRequest;
+use App\Http\Requests\UpdateDoctorRequest;
 use App\Models\Doctor;
 use App\Http\Resources\DoctorResource;
+use App\Repository\Admin\Doctor\DoctorRepository;
 use Illuminate\Http\Request;
 
 class AdminController extends Controller
 {
+    protected $doctor;
+
+    public function __construct(DoctorRepository $doctor)
+    {
+        $this->doctor = $doctor;
+    }
+
+
     public function index()
     {
-        $doctors = Doctor::orderBy('id', 'desc')->get();
+        $doctors = $this->doctor->allDoctor;
 
         return DoctorResource::Collection($doctors);
     }
 
-    public function store(Request $request)
-    {
+    public function store(StoreDoctorRequest $request)
+    {     
         
-        $request->validate([
-            'user_id' => 'required',
-            'first_name' => 'required',
-            'last_name' => 'required',
-            'd_o_b' => 'required',
-            'phone' => 'required',
-            'room_id' => 'required',
-            'service_id' => 'required',
-            'image' => 'required',
-            'address' => 'required',
-        ]);
+        $data = $request->all();
 
-        $image = $request->image;
-  
-        $originalName = $image->getClientOriginalName();
-  
-        $image_new_name = 'image-' .time() .  '-' .$originalName;
-  
-        $image->move('doctors/image', $image_new_name);
+        $this->doctor->saveDoctor($request, $data);
 
-        $doctor = new Doctor;
-        $doctor->user_id = $request->input('user_id');
-        $doctor->first_name = $request->input('first_name');
-        $doctor->last_name = $request->input('last_name');
-        $doctor->d_o_b = $request->input('d_o_b');
-        $doctor->phone = $request->input('phone');
-        $doctor->room_id = $request->input('room_id');
-        $doctor->service_id = $request->input('service_id');
-        $doctor->image = 'doctors/image/' . $image_new_name;
-        $doctor->address = $request->input('address');
-        $doctor->save();
-
-        return new DoctorResource($doctor); 
+        return response()->json([
+            'message' => 'Doctor has been Saved Successfully'
+        ]); 
     }
 
     public function show(Doctor $doctor)
@@ -60,51 +44,25 @@ class AdminController extends Controller
         return new DoctorResource($doctor);
     }
 
-    public function update(Request $request, Doctor $doctor)
+    public function update(UpdateDoctorRequest $request, Doctor $doctor)
     {
-        $request->validate([
-            'user_id' => 'required',
-            'first_name' => 'required',
-            'last_name' => 'required',
-            'd_o_b' => 'required',
-            'phone' => 'required',
-            'room_id' => 'required',
-            'service_id' => 'required',
-            'image' => 'required',
-            'address' => 'required',
-        ]);
+        $data = $request->all();
+      
+       $this->doctor->updateDoctor($request, $doctor, $data);
 
-        if( $request->hasFile('image')) {
-  
-            $image = $request->image;
-  
-            $originalName = $image->getClientOriginalName();
-    
-            $image_new_name = 'image-' .time() .  '-' .$originalName;
-    
-            $image->move('doctors/image', $image_new_name);
-  
-            $doctor->image = 'doctors/image/' . $image_new_name;
-      }
-
-      $doctor->user_id = $request->input('user_id');
-      $doctor->first_name = $request->input('first_name');
-      $doctor->last_name = $request->input('last_name');
-      $doctor->d_o_b = $request->input('d_o_b');
-      $doctor->phone = $request->input('phone');
-      $doctor->room_id = $request->input('room_id');
-      $doctor->service_id = $request->input('service_id');
-      $doctor->address = $request->input('address');
-      $doctor->update();
-
-      return new DoctorResource($doctor);
+       return response()->json([
+        'message'  => 'Doctor Updated Successfully'
+       ]);
     }
 
     public function destroy(Doctor $doctor)
     {
-       $doctor = $doctor->delete();
+        $this->doctor->removeDoctor($doctor);
 
-        return new DoctorResource($doctor);
+        return response()->json([
+            'status' => 'Doctor Removed Successfully',
+            'message' => $doctor,
+        ]);
     }
 
     public function search($search)

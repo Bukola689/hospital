@@ -7,9 +7,16 @@ use App\Models\Service;
 use App\Http\Resources\ServiceResource;
 use App\Http\Requests\StoreServiceRequest;
 use App\Http\Requests\UpdateServiceRequest;
+use App\Repository\Admin\Service\ServiceRepository;
 
 class ServiceController extends Controller
 {
+    public $service;
+    
+    public function __construct(ServiceRepository $service)
+    {
+        $this->service = $service;
+    }
     /**
      * Display a listing of the resource.
      *
@@ -18,7 +25,7 @@ class ServiceController extends Controller
     public function index()
     {
 
-        $services = Service::orderBy('id', 'desc')->get();
+        $services = Service::orderBy('id', 'desc')->paginate(5);
         //dd($services);
 
         return ServiceResource::Collection($services);
@@ -42,9 +49,9 @@ class ServiceController extends Controller
      */
     public function store(StoreServiceRequest $request)
     {
-        $service = new Service;
-        $service->name = $request->input('name');
-        $service->save();
+        $data = $request->all();
+
+        $this->service->saveService($request, $data);
 
        return response()->json([
         'status' => true,
@@ -92,20 +99,15 @@ class ServiceController extends Controller
      */
     public function update(UpdateServiceRequest $request, Service $service)
     {
-        $service->name = $request->input('name');
-        $service->update();
+       $data = $request->all();
 
-       if($service) {
-
-        return new ServiceResource($service);
-
-       } else {
+       $this->service->updateService($request, $service, $data);
         
         return response()->json([
-            'status' => false,
-            'message' => 'Service Was Not Updated !'
+            'status' => true,
+            'message' => 'Service Was Updated !'
            ]);
-       }
+       
     }
 
     /**
@@ -116,9 +118,11 @@ class ServiceController extends Controller
      */
     public function destroy(Service $service)
     {
-        $service = $service->delete();
+       $this->service->removeService($service);
 
-        return new ServiceResource($service);
+        return response()->json([
+            'message' => 'Service Deleted Successfully'
+        ]);
        
     }
 }

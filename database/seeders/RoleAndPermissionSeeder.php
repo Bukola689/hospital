@@ -120,12 +120,6 @@ class RoleAndPermissionSeeder extends Seeder
          Permission::create(['name' => $updateRoom]);
          Permission::create(['name' => $deleteRoom]);
 
-         Permission::create(['name' => $accessWard]);
-         Permission::create(['name' => $storeWard]);
-         Permission::create(['name' => $showWard]);
-         Permission::create(['name' => $updateWard]);
-         Permission::create(['name' => $deleteWard]);
-
          Permission::create(['name' => $accessTest]);
          Permission::create(['name' => $storeTest]);
          Permission::create(['name' => $showTest]);
@@ -171,11 +165,6 @@ class RoleAndPermissionSeeder extends Seeder
              $showRoom,
              $updateRoom,
              $deleteRoom,
-             $accessWard,
-             $storeWard,
-             $showWard,
-             $updateWard,
-             $deleteWard,
              $accessAppointment,
              $storeAppointment,
              $showAppointment,

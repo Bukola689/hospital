@@ -7,11 +7,19 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
+use App\Repository\Admin\User\UserRepository;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
+
+    public $user;
+
+    public function __construct(UserRepository $user)
+    {
+        $this->user = $user;
+    }
     /**
      * Display a listing of the resource.
      *
@@ -19,7 +27,7 @@ class UserController extends Controller
      */
     public function index()
     {
-        $users = User::orderBy('id', 'desc')->get();
+        $users = User::orderBy('id', 'desc')->paginate(5);
 
         return response()->json([
             'status' => true,
@@ -45,11 +53,9 @@ class UserController extends Controller
      */
     public function store(StoreUserRequest $request)
     { 
-        $user = new User;
-        $user->username = $request->input('username');
-        $user->email = $request->input('email');
-        $user->password = Hash::make($request->password);
-        $user->save();
+        $data = $request->all();
+
+       $this->user->saveUser($request, $data);
 
        return response()->json([
         'status' => true,
@@ -100,20 +106,14 @@ class UserController extends Controller
      */
     public function update(UpdateUserRequest $request, User $user)
     {
-        $user->username = $request->input('username');
-        $user->update();
+       $data = $request->all();
 
-       if($user) {
-        return response()->json([
-            'status' => true,
-            'message' => 'User Updated Successfully !'
-           ]);
-       } else {
-        return response()->json([
-            'status' => false,
-            'message' => 'User Was Not Updated !'
-           ]);
-       }
+       $this->user->updateUser($request,$user, $data);
+
+       return response()->json([
+        'message' => 'Use Updated Successfully'
+       ]);
+     
     }
 
     /**
@@ -124,20 +124,10 @@ class UserController extends Controller
      */
     public function destroy(User $user)
     {
-        $user = $user->delete();
-
-       if($user) {
+        $this->user->removeUser($user);
+        
         return response()->json([
-            'status' => true,
-            'message' => 'User Deleted Successfully !'
+            'messagfe' => 'User removed Successsfully'
         ]);
-
-       } else {
-        return response()->json([
-            'status' => false,
-            'message' => 'No User Found !'
-        ]);
-
-       }
     }
 }

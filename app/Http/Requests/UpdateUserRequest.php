@@ -24,7 +24,16 @@ class UpdateUserRequest extends FormRequest
     public function rules()
     {
         return [
-            'username' => 'required',
+            'username' => ['string','required'],
+        ];
+    }
+
+    public function messages()
+    {
+        return [
+            'username.string' => 'username must be a string',
+            'username.required' => 'please input your username correctly',
+           
         ];
     }
 }

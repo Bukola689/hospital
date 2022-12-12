@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\User\UserLoggin;
 use App\Models\User;
+use Illuminate\Auth\Events\Login;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
 
@@ -27,6 +29,8 @@ class LoginController extends Controller
             'user'=>$user,
             'token'=>$token,
         ];
+
+        //event(new UserLoggin($user));
 
         return response($response, 200);
       }

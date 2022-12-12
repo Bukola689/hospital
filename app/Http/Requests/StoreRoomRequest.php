@@ -27,4 +27,11 @@ class StoreRoomRequest extends FormRequest
             'room_no' => 'required'
         ];
     }
+
+    public function messages()
+    {
+        return [
+            'room_no.required' => 'please input your room no'
+        ];
+    }
 }

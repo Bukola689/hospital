@@ -7,9 +7,16 @@ use App\Models\Nurse;
 use App\Http\Resources\NurseResource;
 use App\Http\Requests\StoreNurseRequest;
 use App\Http\Requests\UpdateNurseRequest;
+use App\Repository\Admin\Nurse\NurseRepository;
 
 class NurseController extends Controller
 {
+    public $nurse;
+
+    public function __construct(NurseRepository $nurse)
+    {
+        $this->nurse = $nurse;
+    }
     /**
      * Display a listing of the resource.
      *
@@ -41,35 +48,13 @@ class NurseController extends Controller
     public function store(StoreNurseRequest $request)
     {
             
-            $request->validate([
-                'user_id' => 'required',
-                'first_name' => 'required',
-                'last_name' => 'required',
-                'd_o_b' => 'required',
-                'phone' => 'required',
-                'image' => 'required',
-                'address' => 'required',
-            ]);
+           $data = $request->all();
+
+           $this->nurse->saveNurse($request, $data);
     
-            $image = $request->image;
-      
-            $originalName = $image->getClientOriginalName();
-      
-            $image_new_name = 'image-' .time() .  '-' .$originalName;
-      
-            $image->move('nurses/image', $image_new_name);
-    
-            $nurse = new Nurse;
-            $nurse->user_id = $request->input('user_id');
-            $nurse->first_name = $request->input('first_name');
-            $nurse->last_name = $request->input('last_name');
-            $nurse->d_o_b = $request->input('d_o_b');
-            $nurse->phone = $request->input('phone');
-            $nurse->image = 'nurses/image/' . $image_new_name;
-            $nurse->address = $request->input('address');
-            $nurse->save();
-    
-            return new NurseResource($nurse); 
+            return response()->json([
+                'status' => 'Nurse Saved Successfully'
+            ]); 
         
     }
 
@@ -104,40 +89,14 @@ class NurseController extends Controller
      */
     public function update(UpdateNurseRequest $request, Nurse $nurse)
     {
-        $request->validate([
-            'user_id' => 'required',
-            'first_name' => 'required',
-            'last_name' => 'required',
-            'd_o_b' => 'required',
-            'phone' => 'required',
-            'image' => 'required',
-            'address' => 'required',
-        ]);
+       
+       $data = $request->all();
 
-        if( $request->hasFile('image')) {
-  
-            $image = $request->image;
-  
-            $originalName = $image->getClientOriginalName();
-    
-            $image_new_name = 'image-' .time() .  '-' .$originalName;
-    
-            $image->move('nurses/image', $image_new_name);
-  
-            $nurse->image = 'nurses/image/' . $image_new_name;
-      }
+       $this->nurse->updateNurse($request,$nurse,$data);
 
-      $nurse->user_id = $request->input('user_id');
-      $nurse->first_name = $request->input('first_name');
-      $nurse->last_name = $request->input('last_name');
-      $nurse->d_o_b = $request->input('d_o_b');
-      $nurse->phone = $request->input('phone');
-      $nurse->room_id = $request->input('room_id');
-      $nurse->service_id = $request->input('service_id');
-      $nurse->address = $request->input('address');
-      $nurse->update();
-
-      return new NurseResource($nurse);
+      return response()->json([
+        'status' => 'Nurse Updated Successfully'
+      ]);
     }
 
     /**
@@ -148,9 +107,11 @@ class NurseController extends Controller
      */
     public function destroy(Nurse $nurse)
     {
-        $nurse = $nurse->delete();
+        $this->nurse->removeNurse($nurse);
 
-        return new NurseResource($nurse);
+        return response()->json([
+            'status' => 'Nurse Deleted Sucessfully'
+        ]);
     }
 
     public function search($search)

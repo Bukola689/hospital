@@ -18,7 +18,7 @@ class CreateTestsTable extends Migration
             $table->integer('user_id');
             $table->string('name');
             $table->foreignId('service_id')->constrained('services')->onDelete('cascade');
-            $table->foreignId('ward_id')->constrained('wards')->onDelete('cascade');
+            $table->foreignId('room_id')->constrained('rooms')->onDelete('cascade');
             $table->string('status')->default('processing');
             $table->timestamps();
         });
