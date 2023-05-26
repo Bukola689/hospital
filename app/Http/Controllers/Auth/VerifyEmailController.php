@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class VerifyEmailController extends Controller
 {
@@ -22,6 +23,8 @@ class VerifyEmailController extends Controller
             $user->markEmailAsVerified();
 
             event(new verified($user));
+
+            Cache::put('user', $user);
         }
 
         return view('auth.verified-account');

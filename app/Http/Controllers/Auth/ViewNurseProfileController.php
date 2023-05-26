@@ -10,8 +10,11 @@ class ViewNurseProfileController extends Controller
 {
     public function viewSingleNurse(Nurse $nurse)
     {
-        {
-            return response()->json($nurse);
-        }
+        $nurseShow = Cache()->rememberForever('nurse:'. $nurse->id, now()->addDay(), function () use ($nurse) {
+            return $nurse;
+        });
+
+         return response()->json($nurseShow);
+       
     }
 }

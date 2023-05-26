@@ -19,14 +19,18 @@ class UserRepository implements IUserRepository
 
     }
 
-    public function updateUser(Request $request,User $user, array $data)
+    public function updateUser(Request $request, $id, array $data)
     {
+        $user = User::find($id);
+
         $user->username = $request->input('username');
         $user->update();
     }
 
-    public function removeUser(User $user)
+    public function removeUser($id)
     {
+        $user = User::find($id);
+
         $user = $user->delete();
 
     }

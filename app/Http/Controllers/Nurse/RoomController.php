@@ -8,6 +8,7 @@ use App\Http\Resources\RoomResource;
 use App\Http\Requests\StoreRoomRequest;
 use App\Http\Requests\UpdateRoomRequest;
 use App\Repository\Admin\Room\RoomRepository;
+use Illuminate\Support\Facades\Cache;
 
 class RoomController extends Controller
 {
@@ -24,8 +25,14 @@ class RoomController extends Controller
      */
     public function index()
     {
-        $rooms = Room::orderBy('id', 'desc')->get();
+        $rooms = Cache::remember('rooms', now()->addDay(), function () {
+            return Room::orderBy('id', 'desc')->paginate(5);
+        });
 
+
+        if($rooms->isEmpty()) {
+            return response()->json('Rooms Is Empty');
+        }
         return RoomResource::Collection($rooms);
     }
 
@@ -52,6 +59,8 @@ class RoomController extends Controller
 
         $this->room->saveRoom($request, $data);
 
+        Cache::put('room', $data);
+
        return response()->json([
         'status' => true,
         'message' => 'Room Added Successfully !'
@@ -65,10 +74,20 @@ class RoomController extends Controller
      * @param  \App\Models\Room  $room
      * @return \Illuminate\Http\Response
      */
-    public function show(Room $room)
+    public function show($id)
     {
+        $room = Room::find($id);
+
+        if(! $room) {
+            return response()->json('Room Id Not Found');
+        }
+
+        $roomShow = Cache()->remember('room:'. $room->id, now()->addDay(), function () use ($room) {
+            return $room;
+        });
+
        if ($room) {
-        return new RoomResource($room);
+        return new RoomResource($roomShow);
 
        } else {
         return response()->json([
@@ -97,12 +116,19 @@ class RoomController extends Controller
      * @param  \App\Models\Room  $room
      * @return \Illuminate\Http\Response
      */
-    public function update(UpdateRoomRequest $request, Room $room)
+    public function update(UpdateRoomRequest $request,  $id)
     {
+        $room = Room::find($id);
+
+        if(! $room) {
+            return response()->json('Room Id Not Found');
+        }
+
         $data = $request->all();
 
         $this->room->updateRoom($request, $room, $data);
-       
+
+        Cache::put('room', $data);
      
         return response()->json([
             'status' => true,
@@ -117,9 +143,17 @@ class RoomController extends Controller
      * @param  \App\Models\Room  $room
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Room $room)
+    public function destroy($id)
     {
+        $room = Room::find($id);
+
+        if(! $room) {
+            return response()->json('Room Id Not Found');
+        }
+
        $this->room->removeRoom($room);
+
+       Cache::pull('room');
 
         return response()->json([
             'status' => true,

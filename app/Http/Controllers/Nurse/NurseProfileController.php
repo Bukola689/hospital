@@ -7,6 +7,9 @@ use App\Http\Controllers\Controller;
 
 use App\Models\Nurse;
 use App\Http\Resources\NurseResource;
+use App\Notifications\Nurse\NurseNotification;
+use Carbon\Carbon;
+use Illuminate\Filesystem\Cache;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -14,7 +17,7 @@ class NurseProfileController extends Controller
 {
     public function nurseProfile(Request $request, Nurse $nurse)
     {
-        $request->validate([
+       $data = $request->validate([
             'first_name' => 'required',
             'last_name' => 'required',
             'd_o_b' => 'required',
@@ -44,7 +47,13 @@ class NurseProfileController extends Controller
       $nurse->address = $request->input('address');
       $nurse->update();
 
+      $when = Carbon::now()->addSeconds(10);
+
       event(new NurseProfile($nurse));
+
+      $nurse->notify((new NurseNotification($nurse))->delay($when));
+
+      cache()->forget('nurse', $data);
 
       return new NurseResource($nurse);
     }

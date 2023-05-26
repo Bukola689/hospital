@@ -9,12 +9,13 @@ use App\Models\Appointment;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class PatientAppointmentController extends Controller
 {
     public function store(Request $request)
     {
-       $request->validate([
+      $data = $request->validate([
             'patient_id' => 'required',
             'doctor_id' => 'required',
             'service_id' => 'required',
@@ -39,8 +40,10 @@ class PatientAppointmentController extends Controller
 
         event(new PatientAppointments($appointment));
 
+        Cache::put('patientAppointment', $data);
+
         return response()->json([
-            'message' => 'Appointment booked Successfully And We Will Contact You Shortly vis Email!',
+            'message' => 'Appointment booked Successfully And We Will Contact You Shortly via Email!',
             'appointment' => $appointment
         ]);
     }
@@ -48,10 +51,15 @@ class PatientAppointmentController extends Controller
     public function appointment()
     {
         if(Auth::id())
-        {
-            $user = Auth::user()->id;
+        {  
 
-            $appoint = Appointment::where('user_id', $user)->get();
+            $appoint = Cache::remember('appointments', now()->addDay(), function() {
+
+                $user = Auth::user()->id;
+
+                 return Appointment::where('user_id', $user)->get();
+
+            });
 
             return response()->json([
                 'appoint' => $appoint

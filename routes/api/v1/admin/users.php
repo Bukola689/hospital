@@ -10,6 +10,4 @@ use Illuminate\Support\Facades\Route;
    Route::get('/users/{user}', [UserController::class, 'show']);
    Route::put('/users/{user}', [UserController::class, 'update']);
    Route::DELETE('/users/{user}', [UserController::class, 'destroy']);
-   Route::get('/users/{search}', [UserController::class, 'searchPost']);
-   
    Route::get('search-users/{search}', [UserController::class, 'searchUser']);

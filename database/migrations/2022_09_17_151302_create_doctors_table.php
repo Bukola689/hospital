@@ -15,13 +15,12 @@ class CreateDoctorsTable extends Migration
     {
         Schema::create('doctors', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->string('first_name');
             $table->string('last_name');
             $table->date('d_o_b');
             $table->string('phone');
-            $table->foreignId('room_id')->constrained('rooms')->onDelete('cascade');
-            $table->foreignId('service_id')->constrained('services')->onDelete('cascade');
+            $table->foreignId('room_id')->constrained('rooms');
+            $table->foreignId('service_id')->constrained('services');
             $table->string('image');
             $table->string('address')->nullable();
             $table->timestamps();

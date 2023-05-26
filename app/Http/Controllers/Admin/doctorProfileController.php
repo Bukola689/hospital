@@ -6,14 +6,17 @@ use App\Events\Doctor\DoctorProfile;
 use App\Http\Controllers\Controller;
 use App\Models\Doctor;
 use App\Http\Resources\DoctorResource;
+use App\Notifications\Admin\DoctorNotification;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class doctorProfileController extends Controller
 {
     public function update(Request $request, Doctor $doctor)
     {
-        $request->validate([
+       $data = $request->validate([
             'first_name' => 'required',
             'last_name' => 'required',
             'd_o_b' => 'required',
@@ -47,7 +50,13 @@ class doctorProfileController extends Controller
       $doctor->address = $request->input('address');
       $doctor->update();
 
+      $when = Carbon::now()->addSeconds(10);
+
       event(new DoctorProfile($doctor));
+
+      $doctor->notify((new DoctorNotification($doctor))->delay($when));
+
+      Cache::put('doctor', $data);
 
       return new DoctorResource($doctor);
     }

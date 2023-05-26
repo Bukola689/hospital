@@ -6,7 +6,7 @@ use App\Http\Controllers\LoginController;
 use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\Admin\AppointmentController;
-use App\Http\Controllers\ResetPasswordController;
+use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\Auth\getAllDoctorController;
 use App\Http\Controllers\Auth\getAllNurseController;
 use App\Http\Controllers\Auth\getAllServiceController;
@@ -42,145 +42,114 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-    Route::get('/', [HomeController::class, 'index']);
+  
+    Route::group(['v1'], function() {
 
-    Route::get('get-doctors', [HomeController::class, 'allDoctor']);
-    Route::get('get-doctors/{id}', [HomeController::class, 'getDoctorByService']);
-    Route::get('search-services/{search}', [HomeController::class, 'search']);
+      
+      Route::get('/doctors', [AdminController::class, 'index']);
+      Route::get('/doctors/{id}', [AdminController::class, 'show']);
+      Route::get('/nurses', [NurseController::class, 'index']);
+      Route::get('/nurses/{id}', [NurseController::class, 'show']);
+      Route::get('/patients', [PatientController::class, 'index']);
+      Route::get('/patients/{id}', [PatientController::class, 'show']);
+      
+      
+      //...auth...//
 
-    Route::get('get-nurses', [HomeController::class, 'allNurse']);
-    Route::get('get-nurses/{id}', [HomeController::class, 'getNurse']);
-    Route::get('search-nurses/{search}', [HomeController::class, 'search']);
+    Route::group(['prefix'=> 'auth'], function() {
+        Route::post('register', [RegisterController::class, 'register']);
+        Route::post('login', [LoginController::class, 'login']);
+        Route::post('forgot-password', [ForgotPasswordController::class, 'forgotPassword']);
+      Route::group(['middleware' => 'api:auth'], function() {
+        Route::post('logout', [LogoutController::class, 'logout']);
+        Route::post('/email/verification-notification', [VerifyEmailController::class, 'resendNotification'])->name('verification.send');
+        Route::post('reset-password', [ResetPasswordController::class, 'resetPassword']); 
 
+       });
+     });
 
-    
-    Route::post('register', [RegisterController::class, 'register']);
-    Route::post('login', [LoginController::class, 'login']);
-    Route::post('reset-password', [ResetPasswordController::class, 'resetPassword']);   
-    Route::post('forgot-password', [ForgotPasswordController::class, 'forgotPassword']); 
+     Route::group(['middleware' => 'me', 'middleware' => 'auth:sanctum'], function() {
 
-    Route::post('/email/verification-notification', [VerifyEmailController::class, 'resendNotification'])->name('verification.send');
+      Route::post('/profiles', [ProfileController::class, 'updateProfile']);
+      Route::post('/change-password', [ProfileController::class, 'changePassword']);
 
-// Route::group(['middleware' => ['role:doctor']], function () {
-
-  Route::prefix('v1')->group(function() {
-
-    Route::middleware(['auth:sanctum'])->group(function() {
-
-      Route::post('logout', [LoginController::class, 'logout']);
-    
-      //...Admin...//
-
-      Route::group(['middleware' => ['role:doctor'], 'prefix' => 'admin/'], function () {
-        
-        require __DIR__ ."/api/v1/admin/users.php";
-
-       require __DIR__ .'/api/v1/admin/doctors.php';
-
-       require __DIR__ .'/api/v1/admin/services.php';
-
-       require __DIR__ .'/api/v1/patient/patients.php';
-
-        Route::get('appointments', [AppointmentController::class, 'index']);
-        Route::post('status/{appoint}', [AppointmentController::class, 'status']);
-        Route::get('councel-appointment/{appoint}', [AppointmentController::class, 'removeAppointment']);
+      Route::get('/doctor-profiles/{id}', [DoctorProfileController::class, 'doctorProfile']);
 
      });
 
-           //...nurse..//
+    
 
-      Route::group(['middleware' => ['role:doctor|nurse'], 'prefix' => 'admin/'], function () {
-          require __DIR__ .'/api/v1/nurse/nurses.php';
-      });
+     Route::group(['middleware' => ['role:super-admin'], 'prefix' => 'admin'], function () {
+
+       Route::get('/users', [UserController::class, 'index']);
+       Route::post('/users', [UserController::class, 'store']);
+       Route::get('/users/{id}', [UserController::class, 'show']);
+       Route::put('/users/{id}', [UserController::class, 'update']);
+       Route::DELETE('/users/{id}', [UserController::class, 'destroy']);
+       Route::post('users/{id}/suspend', [UserController::class, 'suspend']);
+       Route::post('users/{id}/active', [UserController::class, 'active']);
+       Route::get('users/{id}/roles', [AdminRoleController::class, 'show']);
+       Route::get('users/{id}/permissions', [AdminPermissionController::class, 'show']);
+       Route::post('users/{id}/roles', [AdminRoleController::class, 'changeRole']);
+       Route::get('search-users/{search}', [UserController::class, 'searchUser']);
+      
+      
+     });
+
+     Route::group(['middleware' => ['role:doctoradmin'], 'prefix' => 'doctor'], function () {
+
+      Route::post('/doctors', [AdminController::class, 'store']);
+      Route::put('/doctors/{id}', [AdminController::class, 'update']);
+      Route::DELETE('/doctors/{id}', [AdminController::class, 'destroy']);
+      Route::post('/nurses', [NurseController::class, 'store']);
+      Route::put('/nurses/{nurse}', [NurseController::class, 'update']);
+      Route::DELETE('/nurses/{id}', [NurseController::class, 'destroy']);
+      Route::post('/patients', [PatientController::class, 'store']);
+      Route::put('/patients/{id}', [PatientController::class, 'update']);
+      Route::DELETE('/patients/{id}', [PatientController::class, 'destroy']);
+      Route::get('/services', [ServiceController::class, 'index']);
+      Route::get('/services/{id}', [ServiceController::class, 'show']);
+      Route::post('/services', [ServiceController::class, 'store']);
+      Route::put('/services/{id}', [ServiceController::class, 'update']);
+      Route::DELETE('/services/{id}', [ServiceController::class, 'destroy']);
+      Route::get('search-services/{search}', [ServiceController::class, 'search']);
+      Route::get('/rooms', [RoomController::class, 'index']);
+      Route::post('/rooms', [RoomController::class, 'store']);
+      Route::get('/rooms/{id}', [RoomController::class, 'show']);
+      Route::put('/rooms/{id}', [RoomController::class, 'update']);
+      Route::DELETE('/rooms/{id}', [RoomController::class, 'destroy']);
+
+     });
 
 
-    Route::group(['middleware' => ['role:doctor|nurse']], function () {
+     Route::group(['middleware' => ['role:nurse'], 'prefix' => 'nurse'], function () {
+
+      Route::get('appointments', [AppointmentController::class, 'index']);
+      Route::post('status/{appoint}', [AppointmentController::class, 'status']);
+      Route::get('councel-appointment/{appoint}', [AppointmentController::class, 'removeAppointment']);
       Route::get('tests', [TestController::class, 'index']);
       Route::get('remove-tests/{test}', [TestController::class, 'removeTest']);
       Route::get('status/{test}', [TestController::class, 'updateTest']);
-    });
 
-    //..Doctor Profile..??
+      Route::post('/nurse-profiles', [NurseProfileController::class, 'nurseProfile']);
+      Route::get('my-profile', [NurseProfileController::class, 'singleNurse']);
 
-      Route::group(['middleware' => ['role:doctor'], 'prefix' => 'admin/'], function () {
-        Route::get('/doctor-profiles/{doctor}', [DoctorProfileController::class, 'doctorProfile']);
-      });
-
-        //...patient..//
-
-        Route::group(['middleware' => ['role:doctor|patient']], function () {
-           
-        });
-
- //..NURSE..//
-
-         //..room..///
-
-      Route::group(['middleware' => ['role:doctor|nurse'], 'prefix' => 'admin/'], function () {
-         require __DIR__ .'/api/v1/nurse/rooms.php';
-       });
-
-        //...nurse profile..//
-
-      Route::group(['middleware' => ['role:doctor|nurse|patient']], function () {
-        Route::post('/nurse-profiles', [NurseProfileController::class, 'nurseProfile']);
-        Route::get('my-profile', [NurseProfileController::class, 'singleNurse']);
-      });
-
- //..PATIENT
-
-          //...patient...//
-
-     Route::group(['middleware' => ['role:doctor|nurse|patient']], function () {
-      Route::post('patient-profiles', [PatientProfileController::class, 'update']);
-      Route::get('view-patient-profile', [ViewPatientProfileController::class, 'singleParent']);
      });
 
-      //..Patient Appointment..//
+     Route::group(['middleware' => ['role:patient'], 'prefix' => 'patient'], function () {
 
-      Route::group(['middleware' => ['role:doctor|nurse|patient']], function () {
-        Route::post('appointments', [PatientAppointmentController::class, 'store']);
-        Route::get('my-appointments', [PatientAppointmentController::class, 'appointment']);    
+      Route::post('appointments', [PatientAppointmentController::class, 'store']);
+      Route::get('my-appointments', [PatientAppointmentController::class, 'appointment']);
+      
+      Route::post('save-tests', [PatientTestController::class, 'storeTest']);
+      Route::get('my-test', [PatientTestController::class, 'getTestId']);
+
+      Route::post('patient-profiles', [patientProfileController::class, 'update']);
+      Route::get('view-patient-profile', [ViewPatientProfileController::class, 'singleParent']);
+
       });
-
-          //... Patient Test..//
-
-     Route::group(['middleware' => ['role:doctor|nurse|patient']], function () {
-         Route::post('save-tests', [PatientTestController::class, 'storeTest']);
-         Route::get('my-test', [PatientTestController::class, 'getTestId']);
-      });
-    
-      //..Auth..//
-
-      Route::group(['middleware' => ['role:doctor|nurse|patient']], function () {
-        Route::get('get-doctors', [getAllDoctorController::class, 'allDoctor']);
-        Route::get('get-doctors/{id}', [getAllDoctorController::class, 'getDoctorByService']);
-        Route::get('search-services/{search}', [getAllDoctorController::class, 'search']);
-      });
-
-      Route::group(['middleware' => ['role:doctor|nurse|patient']], function () {
-        Route::get('get-nurses', [getAllNurseController::class, 'allNurse']);
-        Route::get('get-nurses/{id}', [getAllNurseController::class, 'getNurse']);
-        Route::get('search-nurses/{search}', [getAllNurseController::class, 'search']);
-      });
-
-      Route::group(['middleware' => ['role:doctor|nurse|patient']], function () {
-        Route::get('get-services', [getAllServiceController::class, 'allService']);
-        Route::get('get-services/{id}', [getAllServiceController::class, 'getService']);
-        Route::get('search-services/{search}', [getAllServiceController::class, 'search']);
-      });
-
-      Route::group(['middleware' => ['role:doctor|nurse|patient']], function () {
-        Route::get('view-patient-profile/{patient}', [ViewPatientProfileController::class, 'viewSingleProfile']);
-        Route::get('single-nurse-profile/{nurse}', [ViewNurseProfileController::class, 'viewSingleDoctor']);
-        Route::get('view-doctor-profile/{doctor}', [ViewDoctorProfileController::class, 'viewSingleProfile']);
-      });
-
-      Route::group(['middleware' => ['role:doctor|nurse|patient']], function () {
-        Route::post('/change-password', [ChangePasswordController::class, 'changePassword']);
-      });
-  
-
-    });
 
    });
+
+
+  

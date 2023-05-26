@@ -11,7 +11,12 @@ class ViewPatientProfileController extends Controller
 {
     public function viewSingleProfile(Patient $patient)
     {
-        return response()->json($patient);
+
+        $patientShow = Cache()->rememberForever('patient:'. $patient->id, now()->addDay(), function () use ($patient) {
+            return $patient;
+        });
+
+        return response()->json($patientShow);
         
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Listeners\Patient\Profile;
+namespace App\Listeners;
 
 use App\Mail\Patient\Profile\ChangePasswordsMail;
 use App\Models\User;

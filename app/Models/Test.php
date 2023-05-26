@@ -11,7 +11,7 @@ class Test extends Model
 
     protected $guarded = [];
 
-    protected $fillable = ['user_id','name','service_id','ward_id', 'status'];
+    protected $fillable = ['patient_id','service_id','room_id', 'status'];
 
     public function service()
     {

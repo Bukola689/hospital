@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Ward;
 use App\Http\Resources\WardResource;
-use App\Http\Requests\StoreWardRequest;
-use App\Http\Requests\UpdateWardRequest;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class WardController extends Controller
 {
@@ -16,7 +16,9 @@ class WardController extends Controller
      */
     public function index()
     {
-        $wards = Ward::orderBy('id', 'desc')->get();
+        $wards = Cache::remember('wards', now()->addDay(), function () {
+            return Ward::orderBy('id', 'desc')->get();
+        });
 
         return WardResource::Collection($wards);
     }
@@ -37,11 +39,13 @@ class WardController extends Controller
      * @param  \App\Http\Requests\StoreWardRequest  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(StoreWardRequest $request)
+    public function store(Request $request)
     {
         $ward = new Ward;
         $ward->room_no = $request->input('room_no');
         $ward->save();
+
+        Cache::put('ward', $ward);
 
        return response()->json([
         'status' => true,
@@ -57,8 +61,12 @@ class WardController extends Controller
      */
     public function show(Ward $ward)
     {
+        $wardShow = Cache::remember('ward:'. $ward->id, now()->addDay(), function () use ($ward) {
+            return $ward;
+        });
+
         if ($ward) {
-            return new WardResource($ward);
+            return new WardResource($wardShow);
     
            } else {
             return response()->json([
@@ -87,10 +95,12 @@ class WardController extends Controller
      * @param  \App\Models\Ward  $ward
      * @return \Illuminate\Http\Response
      */
-    public function update(UpdateWardRequest $request, Ward $ward)
+    public function update(Request $request, Ward $ward)
     {
         $ward->room_no = $request->input('room_no');
         $ward->update();
+
+        Cache::put('ward', $ward);
 
        if($ward) {
        
@@ -112,7 +122,9 @@ class WardController extends Controller
      */
     public function destroy(Ward $ward)
     {
-        $ward = $ward->delete();
+        $ward->delete();
+
+        Cache::pull('ward');
 
         if($ward) {
          return response()->json([

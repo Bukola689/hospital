@@ -11,7 +11,9 @@ class getAllDoctorController extends Controller
 {
     public function allDoctor()
     {
-        $allDoctors = Doctor::orderBy('id', 'desc')->get();
+        $allDoctors = cache()->rememberForever('doctor:all', function () {
+            return Doctor::orderBy('id', 'desc')->paginate(5);
+        });
 
         return response()->json([
             'success' => true,
@@ -22,12 +24,16 @@ class getAllDoctorController extends Controller
     public function getDoctorByService($id)
     {
         //$post = Post::find($id);
-         $doctor = Doctor::with('service')->where('id', $id)->get();
+       
+
+         $doctorId =Cache()->rememberForever('doctor:'. $id, function () use ($id) {
+            return Doctor::with('service')->where('id', $id)->get();;
+        });
 
         // return new PostResource($post);
         return response()->json([
             'status' => true,
-            'doctor' => $doctor
+            'doctor' => $doctorId
         ]);
     }
 

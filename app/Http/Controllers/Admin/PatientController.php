@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Auth;
+namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 
@@ -11,6 +11,7 @@ use App\Http\Resources\PatientResource;
 use App\Http\Requests\StorePatientRequest;
 use App\Http\Requests\UpdatePatientRequest;
 use App\Repository\Admin\Patient\PatientRepository;
+use Illuminate\Support\Facades\Cache;
 
 class PatientController extends Controller
 {
@@ -27,7 +28,13 @@ class PatientController extends Controller
      */
     public function index()
     {
-        $patients = Patient::orderBy('id', 'desc')->paginate(5);
+        $patients = Cache::remember('patients', now()->addDay(), function () {
+            return Patient::orderBy('id', 'desc')->paginate(5);
+        });
+
+        if($patients->isEmpty()) {
+            return response()->json('Patient Not Found');
+        }
 
         return PatientResource::Collection($patients);
     }
@@ -50,9 +57,12 @@ class PatientController extends Controller
      */
     public function store(StorePatientRequest $request)
     {
+        
       $data = $request->all();
 
       $this->patient->savePatient($request, $data);
+
+      Cache::put('patient', $data);
 
         return response()->json([
             'message' => 'Patient Saved Suucessfully'
@@ -65,9 +75,18 @@ class PatientController extends Controller
      * @param  \App\Models\Patient  $patient
      * @return \Illuminate\Http\Response
      */
-    public function show(Patient $patient)
+    public function show($id)
     {
-        return new PatientResource($patient);
+        $patient = Patient::find($id);
+
+        if(! $patient) {
+            return response()->json('patient Not Found');
+        }
+
+        $patientShow = Cache::remember('patient:'. $patient->id, now()->addDay(), function () use ($patient) {
+            return $patient;
+        });
+        return new PatientResource($patientShow);
     }
 
     /**
@@ -88,11 +107,19 @@ class PatientController extends Controller
      * @param  \App\Models\Patient  $patient
      * @return \Illuminate\Http\Response
      */
-    public function update(UpdatePatientRequest $request, Patient $patient)
+    public function update(UpdatePatientRequest $request,  $id)
     {
+        $patient = Patient::find($id);
+
+        if(! $patient) {
+            return response()->json('patient Not Found');
+        }
+
         $data = $request->all();
 
         $this->patient->updatePatient($request, $patient, $data);
+
+        Cache::put('patient', $data);
 
       return response()->json([
         'status' => 'Patient Updated Successfully'
@@ -105,9 +132,17 @@ class PatientController extends Controller
      * @param  \App\Models\Patient  $patient
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Patient $patient)
+    public function destroy($id)
     {
+        $patient = Patient::find($id);
+
+        if(! $patient) {
+            return response()->json('patient Not Found');
+        }
+
        $this->patient->removePatient($patient);
+
+       Cache::pull('patient');
 
         return response()->json([
             'status' => 'Patient Removed Successfully'

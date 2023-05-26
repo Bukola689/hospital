@@ -18,191 +18,121 @@ class RoleAndPermissionSeeder extends Seeder
          // reset cached roles and permissions
          app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
-         $accessUser = 'access user';
-         $storeUser = 'store user';
-         $showUser = 'show user';
-         $updateUser = 'update user';
+         $addUser = 'add user';
+         $editUser = 'edit user';
          $deleteUser = 'delete user';
  
-         $accessDoctor = 'access doctor';
-         $storeDoctor = 'store doctor';
-         $showDoctor = 'show doctor';
-         $updateDoctor = 'update doctor';
+         $addDoctor = 'add doctor';
+         $editDoctor = 'edit doctor';
          $deleteDoctor = 'delete doctor';
  
-         $accessNurse = 'access nurse';
-         $storeNurse = 'store nurse';
-         $showNurse = 'show nurse';
-         $updateNurse = 'update nurse';
+         $addNurse = 'add nurse';
+         $editNurse = 'edit nurse';
          $deleteNurse = 'delete nurse';
  
-         $accessPatient = 'access patient';
-         $storePatient = 'store patient';
-         $showPatient = 'show patient';
-         $updatePatient = 'update patient';
+         $addPatient = 'add patient';
+         $editPatient = 'edit patient';
          $deletePatient = 'delete patient';
  
-         $accessService = 'access service';
-         $storeService = 'store service';
-         $showService = 'show service';
-         $updateService = 'update service';
+         $addService = 'add service';
+         $editService = 'edit service';
          $deleteService = 'delete service';
  
-         $accessRoom = 'access room';
-         $storeRoom = 'store room';
-         $showRoom = 'show room';
-         $updateRoom = 'update room';
+         $addRoom = 'add room';
+         $editRoom = 'edit room';
          $deleteRoom = 'delete room';
 
-         $accessWard = 'access ward';
-         $storeWard = 'store ward';
-         $showWard = 'show ward';
-         $updateWard = 'update ward';
-         $deleteWard = 'delete ward';
-
-         $accessAppointment = 'access appointment';
-         $storeAppointment = 'store appointemnt';
-         $showAppointment = 'show appointemnt';
-         $updateAppointment = 'update appointment';
+         $addAppointment = 'add appointemnt';
+         $editAppointment = 'edit appointment';
          $deleteAppointment = 'delete appointment';
 
-         $accessTest = 'access test';
-         $storeTest = 'store test';
-         $showTest = 'show test';
-         $showTest = 'show test';
-         $updateTest = 'update test';
+         $addTest = 'add test';
+         $editTest = 'edit test';
          $deleteTest = 'delete test';
-
-         $getAllNurse = 'getAllNurse';
-         $getAllDoctor = 'getAllDoctor';
-         $getAllService = 'getAllService';
- 
-         $doctorProfile = 'doctor profile';
-         $nurseProfile = 'nurse profile';
-         $patientProfile = 'patient profile';
-         $patientAppointment = 'patient appointment';
  
  
          //user permisssion..//
-         Permission::create(['name' => $accessUser]);
-         Permission::create(['name' => $storeUser]);
-         Permission::create(['name' => $showUser]);
-         Permission::create(['name' => $updateUser]);
+         Permission::create(['name' => $addUser]);
+         Permission::create(['name' => $editUser]);
          Permission::create(['name' => $deleteUser]);
  
-         Permission::create(['name' => $accessDoctor]);
-         Permission::create(['name' => $storeDoctor]);
-         Permission::create(['name' => $showDoctor]);
-         Permission::create(['name' => $updateDoctor]);
+         Permission::create(['name' => $addDoctor]);
+         Permission::create(['name' => $editDoctor]);
          Permission::create(['name' => $deleteDoctor]);
  
-         Permission::create(['name' => $accessNurse]);
-         Permission::create(['name' => $storeNurse]);
-         Permission::create(['name' => $showNurse]);
-         Permission::create(['name' => $updateNurse]);
+         Permission::create(['name' => $addNurse]);
+         Permission::create(['name' => $editNurse]);
          Permission::create(['name' => $deleteNurse]);
  
-         Permission::create(['name' => $accessPatient]);
-         Permission::create(['name' => $storePatient]);
-         Permission::create(['name' => $showPatient]);
-         Permission::create(['name' => $updatePatient]);
+         Permission::create(['name' => $addPatient]);
+         Permission::create(['name' => $editPatient]);
          Permission::create(['name' => $deletePatient]);
  
-         Permission::create(['name' => $accessService]);
-         Permission::create(['name' => $storeService]);
-         Permission::create(['name' => $showService]);
-         Permission::create(['name' => $updateService]);
+         Permission::create(['name' => $addService]);
+         Permission::create(['name' => $editService]);
          Permission::create(['name' => $deleteService]);
  
-         Permission::create(['name' => $accessRoom]);
-         Permission::create(['name' => $storeRoom]);
-         Permission::create(['name' => $showRoom]);
-         Permission::create(['name' => $updateRoom]);
+         Permission::create(['name' => $addRoom]);
+         Permission::create(['name' => $editRoom]);
          Permission::create(['name' => $deleteRoom]);
 
-         Permission::create(['name' => $accessTest]);
-         Permission::create(['name' => $storeTest]);
-         Permission::create(['name' => $showTest]);
-         Permission::create(['name' => $updateTest]);
+         Permission::create(['name' => $addTest]);
+         Permission::create(['name' => $editTest]);
          Permission::create(['name' => $deleteTest]);
 
-         Permission::create(['name' => $accessAppointment]);
-         Permission::create(['name' => $storeAppointment]);
-         Permission::create(['name' => $showAppointment]);
-         Permission::create(['name' => $updateAppointment]);
+         Permission::create(['name' => $addAppointment]);
+         Permission::create(['name' => $editAppointment]);
          Permission::create(['name' => $deleteAppointment]);
-
-         Permission::create(['name' => $getAllDoctor]);
-         Permission::create(['name' => $getAllNurse]);
-         Permission::create(['name' => $getAllService]);
-
-         Permission::create(['name' => $doctorProfile]);
-         Permission::create(['name' => $nurseProfile]);
-         Permission::create(['name' => $patientProfile]);
-         Permission::create(['name' => $patientAppointment]);
  
            //...Roles...//
- 
+
+           $superAdmin = 'super-admin';
            $doctor = 'doctor';
            $nurse = 'nurse';
            $patient = 'patient';
 
-        Role::create(['name' => $doctor])->givePermissionTo(Permission::all());
+        Role::create(['name' => $superAdmin])->givePermissionTo(Permission::all());
+
+        Role::create(['name' => $doctor])->givePermissionTo([
+            $addDoctor,
+            $editDoctor,
+            $deleteDoctor,
+            $addNurse,
+            $editNurse,
+            $deleteNurse,
+            $addPatient,
+            $editPatient,
+            $deletePatient,
+            $addService,
+            $editService,
+            $deleteService,
+            $addRoom,
+            $editRoom,
+            $deleteRoom,
+            $addAppointment,
+            $editAppointment,
+            $deleteAppointment,
+            $addTest,
+            $editTest,
+            $deleteTest,
+        ]);
  
          Role::create(['name' => $nurse])->givePermissionTo([
-             $accessPatient,
-             $storePatient,
-             $showPatient,
-             $updatePatient,
+             $addPatient,
+             $editPatient,
              $deletePatient,
-             $accessService,
-             $storeService,
-             $showService,
-             $updateService,
-             $deleteService,
-             $accessRoom,
-             $storeRoom,
-             $showRoom,
-             $updateRoom,
-             $deleteRoom,
-             $accessAppointment,
-             $storeAppointment,
-             $showAppointment,
-             $updateAppointment,
+             $addAppointment,
+             $editAppointment,
              $deleteAppointment,
-             $accessTest,
-             $storeTest,
-             $showTest,
-             $showTest,
-             $updateTest,
+             $addTest,
+             $editTest,
              $deleteTest,
-             $getAllNurse,
-             $getAllDoctor,
-             $getAllService,
-             $doctorProfile,
-             $nurseProfile,
-             $patientProfile,
-             $patientAppointment,
          ]);
  
          Role::create(['name' => $patient])->givePermissionTo([
            
-            $accessPatient,
-            $storePatient,
-            $showPatient,
-            $updatePatient,
-            $deletePatient,
-            $storeAppointment,
-            $showAppointment,
-            $storeTest,
-            $showTest,
-            $getAllNurse,
-            $getAllDoctor,
-            $getAllService,
-            $doctorProfile,
-            $nurseProfile,
-            $patientProfile,
-            $patientAppointment,
+            $addAppointment,
+            $addTest,
             
          ]);
     }

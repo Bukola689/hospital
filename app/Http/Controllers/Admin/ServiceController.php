@@ -8,6 +8,7 @@ use App\Http\Resources\ServiceResource;
 use App\Http\Requests\StoreServiceRequest;
 use App\Http\Requests\UpdateServiceRequest;
 use App\Repository\Admin\Service\ServiceRepository;
+use Illuminate\Support\Facades\Cache;
 
 class ServiceController extends Controller
 {
@@ -25,8 +26,14 @@ class ServiceController extends Controller
     public function index()
     {
 
-        $services = Service::orderBy('id', 'desc')->paginate(5);
-        //dd($services);
+        $services = Cache::remember('services', now()->addDay(), function () {
+            return Service::orderBy('id', 'desc')->paginate(5);
+        });
+
+        if($services->isEmpty()) {
+            return response()->json('Service not found');
+        }
+
 
         return ServiceResource::Collection($services);
     }
@@ -53,6 +60,8 @@ class ServiceController extends Controller
 
         $this->service->saveService($request, $data);
 
+        Cache::put('service', $data);
+
        return response()->json([
         'status' => true,
         'message' => 'Service Added Successfully !'
@@ -66,10 +75,20 @@ class ServiceController extends Controller
      * @param  \App\Models\Service  $service
      * @return \Illuminate\Http\Response
      */
-    public function show(Service $service)
+    public function show($id)
     {
+        $service = Service::find($id);
+
+        if (!$service) {
+            return response()->json('Service Id Not Found');
+        }
+
+        $serviceShow = Cache::remember('service:'. $service->id, now()->addDay(), function () use ($service) {
+            return $service;
+        });
+        
         if ($service) {
-            return new ServiceResource($service);
+            return new ServiceResource($serviceShow);
     
            } else {
             return response()->json([
@@ -97,11 +116,19 @@ class ServiceController extends Controller
      * @param  \App\Models\Service  $service
      * @return \Illuminate\Http\Response
      */
-    public function update(UpdateServiceRequest $request, Service $service)
+    public function update(UpdateServiceRequest $request,$id)
     {
+        $service = Service::find($id);
+
        $data = $request->all();
+        
+       if (!$service) {
+           return response()->json('Service Id Not Found');
+       }
 
        $this->service->updateService($request, $service, $data);
+
+       Cache::put('service', $data);
         
         return response()->json([
             'status' => true,
@@ -116,9 +143,17 @@ class ServiceController extends Controller
      * @param  \App\Models\Service  $service
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Service $service)
+    public function destroy($id)
     {
+        $service = Service::find($id);
+
+        if (!$service) {
+            return response()->json('Service Id Not Found');
+        }
+
        $this->service->removeService($service);
+
+       Cache::pull('service');
 
         return response()->json([
             'message' => 'Service Deleted Successfully'

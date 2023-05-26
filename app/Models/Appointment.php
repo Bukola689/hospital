@@ -11,11 +11,11 @@ class Appointment extends Model
 
     protected $guarded = [];
 
-    protected $fillable = ['user_id','patient_id','phone','service_id', 'doctor_id','appointment_date', 'message', 'status'];
+    protected $fillable = ['patient_id','phone','service_id', 'doctor_id','appointment_date', 'message', 'status'];
 
-    public function user()
+    public function patient()
     {
-        return $this->belongsTo(User::class);
+        return $this->hasOne(Doctor::class);
     }
 
     public function doctor()

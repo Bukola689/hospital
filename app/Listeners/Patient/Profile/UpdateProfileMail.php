@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Mail;
 
 class UpdateProfileMail
 {
-    private $user;
+    public $user;
     /**
      * Create the event listener.
      *

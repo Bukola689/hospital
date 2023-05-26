@@ -4,9 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Events\User\UserLoggin;
 use App\Models\User;
+use App\Notifications\LoginNotification;
+use Carbon\Carbon;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class LoginController extends Controller
 {
@@ -30,7 +33,13 @@ class LoginController extends Controller
             'token'=>$token,
         ];
 
-        //event(new UserLoggin($user));
+        $when = Carbon::now()->addSeconds(10);
+
+        event(new UserLoggin($user));
+
+        $user->notify((new LoginNotification($user))->delay($when));
+
+        Cache::put('user');
 
         return response($response, 200);
       }

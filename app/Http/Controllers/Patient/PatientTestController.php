@@ -7,12 +7,13 @@ use App\Models\Test;
 use App\Http\Resources\TestResource;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class PatientTestController extends Controller
 {
     public function storeTest(Request $request)
     {
-        $request->validate([
+       $data = $request->validate([
             'name' => 'required',
             'service_id' => 'required',
             'room_id' => 'required',
@@ -29,6 +30,8 @@ class PatientTestController extends Controller
         $test->status = 'processing';
         $test->save();
 
+        Cache::put('test', $data);
+
         return new TestResource($test);
     }
 
@@ -36,9 +39,11 @@ class PatientTestController extends Controller
     {
       if(Auth::id())
       {
-        $user_id = Auth::user()->id;
+        $test = Cache::remember('test', now()->addDay(), function () {
+             $user_id = Auth::user()->id;
 
-        $test = Test::where('user_id', $user_id)->get();
+            return Test::where('user_id', $user_id)->get(); 
+        });
  
          return response()->json([
             'test' => $test
